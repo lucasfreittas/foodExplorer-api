@@ -1,11 +1,11 @@
 const { Router } = require('express');
-const usersRouter = express();
+const usersRouter = Router();
 
 const UsersController = require('../controllers/usersController');
 const usersController = new UsersController();
 
 usersRouter.post('/', usersController.create);
-usersRouter.put('/', usersController.update);
-usersRouter.delete('/', usersController.delete);
+usersRouter.put('/:id', usersController.update);
+usersRouter.delete('/:id', usersController.delete);
 
 module.exports = usersRouter;
