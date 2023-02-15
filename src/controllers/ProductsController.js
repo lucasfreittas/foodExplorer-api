@@ -1,22 +1,112 @@
+const AppError = require('../utils/AppError');
+const knex = require('../database/knex');
+
 class ProductsController{
     async create(request, response){
-        return response.json('Rota Create Ativa!')
+        const { name, description, price, tags } = request.body;
+        const user_id = request.user.id
+        const user = await knex('users').where({id: user_id}).first();
+
+        if(user.admin == false){
+            throw new AppError('Usuário não autorizado', 401)
+        };
+
+        if(!name || !description || !price){
+            throw new AppError('Por favor, preencha todos os campos!')
+
+        };
+
+        const newProduct = {
+            name,
+            description,
+            price
+        };
+
+        const product_id = await knex('products').insert(newProduct)
+
+        const insertTags = tags.map(name => {
+            return({
+                product_id,
+                name
+            });
+        });
+
+        await knex('tags').insert(insertTags)
+
+        return response.json({newProduct})
 
     };
 
     async read(request, response){
-        return response.json('Rota Read Ativa!')
+        const { id } = request.params;
+        const product = await knex('products').where({id}).first();
+        const tags = await knex('tags').where({product_id: id}).orderBy('name');
+
+        return response.json({product, tags})
         
     }
 
     async update(request, response){
-        return response.json('Rota Update Ativa!')
+        const { id } = request.params;
+        const user_id = request.user.id;
+        const { name, description, price } = request.body;
+
+        const user = await knex('users').where({id: user_id}).first();
+        const product = await knex('products').where({id}).first();
+
+        if(user.admin == false){
+            throw new AppError('Usuário não autorizado', 401)
+        }
+
+        const updated = {
+            name,
+            description,
+            price
+        };
+
+        const newProduct = Object.assign(product, updated);
+        await knex('products').where({id}).first().update(newProduct);
+
+        return response.json({product})
 
     };
 
     async delete(request, response){
-        return response.json('Rota Delete Ativa!')
+        const { id } = request.params;
+        const user_id = request.user.id;
+        const user = await knex('users').where({id: user_id}).first()
 
+        if(user.admin == false){
+            throw new AppError('Usuário não autorizado', 401)
+        }
+
+        await knex('products').where({id}).delete();
+
+        return response.json('Produto deletado com sucesso!')
+
+    };
+
+    async index(request, response){
+        const user_id = request.user.id;
+        const {name, tags} = request.query;
+
+        let products;
+
+        if(tags){
+            const filterTags = tags.split(',').map(tag => tag.trim().toLowerCase());
+
+            products = await knex('products')
+            .select('products.*')
+            .join('tags', 'products.id', '=', 'tags.product_id')
+            .whereIn(knex.raw('lower(tags.name)'), filterTags)
+            .groupBy('products.name')
+        } else {
+            products = await knex('products')
+            .whereLike('name', `%${name}%`)
+            .orderBy('name')
+        }
+        
+        return response.json(products);
     };
 
 };
