@@ -4,9 +4,12 @@ const ordersRouter = Router();
 const OrdersController = require('../controllers/ordersController');
 const ordersController = new OrdersController();
 
-ordersRouter.post('/', ordersController.create);
-ordersRouter.get('/:id', ordersController.read);
-ordersRouter.delete('/:id', ordersController.delete);
+const checkToken = require('../middlewares/checkToken');
+
+ordersRouter.post('/', checkToken, ordersController.create);
+ordersRouter.get('/', checkToken, ordersController.read);
+ordersRouter.put('/:id', checkToken, ordersController.update);
+ordersRouter.delete('/:id', checkToken, ordersController.delete);
 
 module.exports = ordersRouter
 
