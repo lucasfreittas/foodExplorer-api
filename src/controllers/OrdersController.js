@@ -96,7 +96,7 @@ class OrdersController{
         await knex('orders').where({id}).first().delete()
 
         return response.json("Pedido deletado com sucesso!");
-    }
+    };
 
 };
 
