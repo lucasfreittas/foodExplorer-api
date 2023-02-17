@@ -6,9 +6,12 @@ const routes = require('./routes');
 const database = require('./database');
 const app = express();
 
+const uploadConfig = require('./configs/uploads');
 
 app.use(express.json());
 app.use(routes)
+app.use('/files', express.static(uploadConfig.UPLOADS_FOLDER));
+
 
 app.use((error, request, response, next) => {
     if(error instanceof AppError){
