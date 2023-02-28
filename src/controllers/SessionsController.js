@@ -8,15 +8,16 @@ class SessionsController{
     async create(request, response){
         const { email, password } = request.body;
         const user = await knex('users').where({email}).first();
-
+        
         if(!user){
             throw new AppError('Email e/ou senha incorretos', 401)
-        };
+        }
 
         const passwordCheck = await compare(password, user.password);
 
-        if(!passwordCheck){
-            throw new AppError('Email e/ou senha incorretos', 401)
+
+        if(passwordCheck === false){
+            throw new AppError('Senha Errada', 401)
         };
 
         const { secret, expiresIn } = authConfig.jwt;
@@ -25,6 +26,7 @@ class SessionsController{
             expiresIn
         })
         
+
         return response.json({user, token})
     };
 

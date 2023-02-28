@@ -1,9 +1,10 @@
 const AppError = require('../utils/AppError');
 const knex = require('../database/knex');
+const DiskStorage = require('../Providers/DiskStorage');
 
 class ProductsController{
     async create(request, response){
-        const { name, description, price, tags } = request.body;
+        const { name, description, price, tags, category } = request.body;
         const user_id = request.user.id
         const user = await knex('users').where({id: user_id}).first();
 
@@ -11,15 +12,17 @@ class ProductsController{
             throw new AppError('Usuário não autorizado', 401)
         };
 
-        if(!name || !description || !price){
+        if(!name || !description || !price || !category){
             throw new AppError('Por favor, preencha todos os campos!')
 
         };
+        
 
         const newProduct = {
             name,
             description,
-            price
+            price,
+            category 
         };
 
         const product_id = await knex('products').insert(newProduct)
@@ -33,7 +36,7 @@ class ProductsController{
 
         await knex('tags').insert(insertTags)
 
-        return response.json({newProduct})
+        return response.json({newProduct, insertTags, product_id})
 
     };
 

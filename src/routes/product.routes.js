@@ -12,7 +12,7 @@ const upload = multer(uploadConfig.MULTER);
 
 const checkToken = require('../middlewares/checkToken');
 
-productsRouter.post('/', checkToken, productsController.create);
+productsRouter.post('/', checkToken, upload.single('photo'), productsController.create);
 productsRouter.get('/:id', productsController.read);
 productsRouter.put('/:id', checkToken, productsController.update);
 productsRouter.delete('/:id', checkToken, productsController.delete);
