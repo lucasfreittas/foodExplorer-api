@@ -17,7 +17,6 @@ class ProductsController{
 
         };
         
-
         const newProduct = {
             name,
             description,
@@ -103,10 +102,12 @@ class ProductsController{
             .join('tags', 'products.id', '=', 'tags.product_id')
             .whereIn(knex.raw('lower(tags.name)'), filterTags)
             .groupBy('products.name')
-        } else {
+        } else if(name) {
             products = await knex('products')
             .whereLike('name', `%${name}%`)
             .orderBy('name')
+        } else {
+            products = await knex('products')
         }
         
         return response.json(products);
