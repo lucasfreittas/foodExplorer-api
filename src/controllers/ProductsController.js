@@ -51,7 +51,7 @@ class ProductsController{
     async update(request, response){
         const { id } = request.params;
         const user_id = request.user.id;
-        const { name, description, price } = request.body;
+        const { name, description, price, tags, category  } = request.body;
 
         const user = await knex('users').where({id: user_id}).first();
         const product = await knex('products').where({id}).first();
@@ -68,6 +68,16 @@ class ProductsController{
 
         const newProduct = Object.assign(product, updated);
         await knex('products').where({id}).first().update(newProduct);
+
+        const insertTags = tags.map(name => {
+            return({
+                product_id: id,
+                name
+            });
+        });
+
+        await knex('tags').where({product_id: id}).delete()
+        await knex('tags').where({product_id: id}).insert(insertTags)
 
         return response.json({product})
 
