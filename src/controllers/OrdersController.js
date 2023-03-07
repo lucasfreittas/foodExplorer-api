@@ -47,10 +47,9 @@ class OrdersController{
         const orders = await knex('orders').where({user_id});
 
         if(user.admin == true){
-            const {client} = request.query;
-            const clientOrders = await knex('orders').where({user_id: client});
+            const clientOrders = await knex('orders');
             return response.json(clientOrders);
-        } 
+        };
 
         return response.json(orders.slice(-5));
     };
