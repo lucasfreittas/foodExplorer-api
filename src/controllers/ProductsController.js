@@ -99,23 +99,25 @@ class ProductsController{
     };
 
     async index(request, response){
-        const user_id = request.user.id;
-        const {name, tags} = request.query;
+
+        const { search } = request.query;
 
         let products;
 
-        if(tags){
-            const filterTags = tags.split(',').map(tag => tag.trim().toLowerCase());
+        if(search){
+            const filterTags = search.split(',').map(tag => tag.trim().toLowerCase());
 
-            products = await knex('products')
+            const tags = await knex('products')
             .select('products.*')
             .join('tags', 'products.id', '=', 'tags.product_id')
             .whereIn(knex.raw('lower(tags.name)'), filterTags)
             .groupBy('products.name')
-        } else if(name) {
-            products = await knex('products')
-            .whereLike('name', `%${name}%`)
+
+            const name = await knex('products')
+            .whereLike('name', `%${search}%`)
             .orderBy('name')
+
+            products = [...tags, ...name]
         } else {
             products = await knex('products')
         }
